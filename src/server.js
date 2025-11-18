@@ -15,6 +15,8 @@ const COLLECTION_NAME = "users";
 const mongoDB = new MongoDB({ uri: MONGO_URI, dbName: DB_NAME});
 await mongoDB.connect();
 await mongoDB.useCollection(COLLECTION_NAME);
+//await mongoDB.create({ name: "Pedro", surname: "García", email: "juan.email.com" });
+
 
 const router = createRouter(mongoDB);
 

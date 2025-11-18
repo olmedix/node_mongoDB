@@ -7,14 +7,8 @@ export function createRouter(mongoInstance) {
   const userController = UserController(mongoInstance);
 
   router.get("/users", userController.index);
+  router.get("/users/:email", userController.showByEmail);
 
-  // Ruta de prueba: GET /status
-  router.get("/status", (req, res) => {
-    sendJSON(res, 200, {
-      ok: true,
-      time: new Date().toISOString(),
-    });
-  });
 
   
   

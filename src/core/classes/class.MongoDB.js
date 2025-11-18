@@ -60,6 +60,11 @@ export class MongoDB {
     return this.collection.findOne({ _id: new ObjectId(id) });
   }
 
+  // READ ONE BY EMAIL
+  async findByEmail(email) {
+    return this.collection.findOne({ email });
+  }
+
   // UPDATE BY ID
   async updateById(id, data) {
     if (!data || typeof data !== "object" || Array.isArray(data)) {

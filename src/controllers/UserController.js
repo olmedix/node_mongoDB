@@ -36,6 +36,29 @@ export function UserController(mongoInstance) {
       }
     },
 
+    // GET /users/:email
+    showByEmail: async (req, res) => {
+      try {
+        const { email } = req.params || {}; // req.params lo rellenará el router cuando lo ampliemos
+        console.log("Email recibido en showByEmail:", email);
+
+        if (!email) {
+          console.log("Falta parámetro email");
+          return sendJSON(res, 400, { error: "Falta parámetro email" });
+        }
+
+        const user = await mongoInstance.findByEmail(email);
+        if (!user) {
+          return sendJSON(res, 404, { error: "Usuario no encontrado" });
+        }
+
+        sendJSON(res, 200, user);
+      } catch (err) {
+        console.error("Error en UserController.showByEmail:", err);
+        sendJSON(res, 500, { error: "Error al obtener usuario" });
+      }
+    },
+
     // POST /users
     store: async (req, res) => {
       try {
