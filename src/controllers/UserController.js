@@ -14,28 +14,6 @@ export function UserController(mongoInstance) {
       }
     },
 
-    // GET /users/:id
-    show: async (req, res) => {
-      try {
-        const { id } = req.params || {}; // req.params lo rellenará el router cuando lo ampliemos
-
-        if (!id) {
-          return sendJSON(res, 400, { error: "Falta parámetro id" });
-        }
-
-        const user = await mongoInstance.findById(id);
-
-        if (!user) {
-          return sendJSON(res, 404, { error: "Usuario no encontrado" });
-        }
-
-        sendJSON(res, 200, user);
-      } catch (err) {
-        console.error("Error en UserController.show:", err);
-        sendJSON(res, 500, { error: "Error al obtener usuario" });
-      }
-    },
-
     // GET /users/:email
     showByEmail: async (req, res) => {
       try {

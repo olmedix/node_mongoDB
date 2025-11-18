@@ -9,8 +9,6 @@ export function createRouter(mongoInstance) {
   router.get("/users", userController.index);
   router.get("/users/:email", userController.showByEmail);
 
-
-  
   
   return router;
 }
