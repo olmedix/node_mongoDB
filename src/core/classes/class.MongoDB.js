@@ -1,0 +1,89 @@
+import { MongoClient, ObjectId } from "mongodb";
+
+export class MongoDB {
+  constructor({ uri, dbName }) {
+    this.uri = uri;
+    this.dbName = dbName;
+    this.client = new MongoClient(this.uri);
+    this.db = null;
+  }
+
+  async connect() {
+    if (this.db) return this.db; // ya conectada
+
+    await this.client.connect();
+
+    this.db = this.client.db(this.dbName);
+    console.log("✅ Conectado a MongoDB");
+
+    return this.db;
+  }
+
+  async disconnect() {
+    await this.client.close();
+    this.db = null;
+    console.log("🔌 Conexión a MongoDB cerrada");
+  }
+
+  // CREATE
+  async create(document) {
+   
+    const now = new Date();
+
+    const object = {
+      ...document,
+      created_at: now,
+      updated_at: now,
+    };
+
+    const result = await this.collection.insertOne(object);
+
+    return {
+      ...object,
+      _id: result.insertedId,
+    };
+  }
+
+  useCollection(name) {
+    if (!this.db) throw new Error("Primero debes conectar con la base de datos");
+    this.collection = this.db.collection(name);
+    return this;
+  }
+
+
+  // READ ALL
+  async findAll() {
+    return this.collection.find({}).toArray();
+  }
+
+  // READ ONE BY ID
+  async findById(id) {
+    return this.collection.findOne({ _id: new ObjectId(id) });
+  }
+
+  // UPDATE BY ID
+ async updateById(id, data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error("Invalid update");
+  }
+
+  const toSet = {
+    ...data,
+    updated_at: new Date(),
+  };
+
+  const result = await this.collection.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: toSet },
+    { returnDocument: "after" }
+  );
+
+  return result.value;
+}
+
+  // DELETE BY ID
+  async deleteById(id) {
+    const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
+    return result.deletedCount === 1;
+  }
+}
