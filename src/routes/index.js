@@ -1,9 +1,12 @@
-// src/routes/index.js
 import { Router } from "../core/classes/class.Router.js";
-import { sendJSON } from "../core/includes/inc.http.js";
+import { UserController } from "../controllers/UserController.js";
 
-export function createRouter() {
+export function createRouter(mongoInstance) {
   const router = new Router();
+
+  const userController = UserController(mongoInstance);
+
+  router.get("/users", userController.index);
 
   // Ruta de prueba: GET /status
   router.get("/status", (req, res) => {

@@ -19,6 +19,13 @@ export class MongoDB {
     return this.db;
   }
 
+  useCollection(name) {
+    if (!this.db)
+      throw new Error("Primero debes conectar con la base de datos");
+    this.collection = this.db.collection(name);
+    return this;
+  }
+
   async disconnect() {
     await this.client.close();
     this.db = null;
@@ -27,7 +34,6 @@ export class MongoDB {
 
   // CREATE
   async create(document) {
-   
     const now = new Date();
 
     const object = {
@@ -44,13 +50,6 @@ export class MongoDB {
     };
   }
 
-  useCollection(name) {
-    if (!this.db) throw new Error("Primero debes conectar con la base de datos");
-    this.collection = this.db.collection(name);
-    return this;
-  }
-
-
   // READ ALL
   async findAll() {
     return this.collection.find({}).toArray();
@@ -62,24 +61,24 @@ export class MongoDB {
   }
 
   // UPDATE BY ID
- async updateById(id, data) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    throw new Error("Invalid update");
+  async updateById(id, data) {
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("Invalid update");
+    }
+
+    const toSet = {
+      ...data,
+      updated_at: new Date(),
+    };
+
+    const result = await this.collection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: toSet },
+      { returnDocument: "after" }
+    );
+
+    return result.value;
   }
-
-  const toSet = {
-    ...data,
-    updated_at: new Date(),
-  };
-
-  const result = await this.collection.findOneAndUpdate(
-    { _id: new ObjectId(id) },
-    { $set: toSet },
-    { returnDocument: "after" }
-  );
-
-  return result.value;
-}
 
   // DELETE BY ID
   async deleteById(id) {

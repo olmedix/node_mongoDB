@@ -1,13 +1,12 @@
-// src/controllers/UserController.js
 import { sendJSON } from "../core/includes/inc.http.js";
 import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
 
-export function createUserController(userClassInstance) {
+export function UserController(mongoInstance) {
   return {
     // GET /users
     index: async (req, res) => {
       try {
-        const users = await userClassInstance.findAll();
+        const users = await mongoInstance.findAll();
         sendJSON(res, 200, users);
       } catch (err) {
         console.error("Error en UserController.index:", err);
@@ -24,7 +23,7 @@ export function createUserController(userClassInstance) {
           return sendJSON(res, 400, { error: "Falta parámetro id" });
         }
 
-        const user = await userClassInstance.findById(id);
+        const user = await mongoInstance.findById(id);
 
         if (!user) {
           return sendJSON(res, 404, { error: "Usuario no encontrado" });
@@ -50,7 +49,7 @@ export function createUserController(userClassInstance) {
         }
 
         // Aquí podrías comprobar si existe ya un usuario con ese email usando findByEmail
-        const newUser = await userClassInstance.create({
+        const newUser = await mongoInstance.create({
           name,
           surname,
           email,
@@ -89,7 +88,7 @@ export function createUserController(userClassInstance) {
           });
         }
 
-        const updatedUser = await userClassInstance.updateById(id, dataToUpdate);
+        const updatedUser = await mongoInstance.updateById(id, dataToUpdate);
 
         if (!updatedUser) {
           return sendJSON(res, 404, { error: "Usuario no encontrado" });
@@ -113,7 +112,7 @@ export function createUserController(userClassInstance) {
           return sendJSON(res, 400, { error: "Falta parámetro id" });
         }
 
-        const deleted = await userClassInstance.deleteById(id);
+        const deleted = await mongoInstance.deleteById(id);
 
         if (!deleted) {
           return sendJSON(res, 404, { error: "Usuario no encontrado" });

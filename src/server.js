@@ -13,12 +13,10 @@ const COLLECTION_NAME = "users";
 
 // Conectar a la base de datos
 const mongoDB = new MongoDB({ uri: MONGO_URI, dbName: DB_NAME});
-const db = await mongoDB.connect();
+await mongoDB.connect();
 await mongoDB.useCollection(COLLECTION_NAME);
-//await mongoDB.create({ name: "Juan", surname: "Pérez" });
 
-
-const router = createRouter({db , mongoDB });
+const router = createRouter(mongoDB);
 
 const server = http.createServer((req, res) => {
   router.handle(req, res);
