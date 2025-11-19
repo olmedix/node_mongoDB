@@ -1,5 +1,6 @@
 import { sendJSON } from "../core/includes/inc.http.js";
 import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
+import { validateUpdateUser } from "../validators/UserValidator.js";
 
 export function UserController(mongoInstance) {
   return {
@@ -42,6 +43,11 @@ export function UserController(mongoInstance) {
         const body = await parseJSONBody(req);
         const { name, surname, email, role } = body;
 
+        const { isValid, errors } = validateUpdateUser(body);
+        if (!isValid) {
+          return sendJSON(res, 400, { errors });
+        }
+
         if (!name || !surname || !email) {
           return sendJSON(res, 400, {
             error: "name, surname y email son obligatorios",
@@ -53,6 +59,8 @@ export function UserController(mongoInstance) {
         if (emailExists) {
           return sendJSON(res, 409, { error: "El email ya está registrado" });
         }
+
+        
 
         const newUser = await mongoInstance.create({
           name,
@@ -92,6 +100,11 @@ export function UserController(mongoInstance) {
           return sendJSON(res, 400, {
             error: "No hay campos válidos para actualizar",
           });
+        }
+
+        const { isValid, errors } = validateUpdateUser(body);
+        if (!isValid) {
+          return sendJSON(res, 400, { errors });
         }
 
         const updatedUser = await mongoInstance.updateById(id, dataToUpdate);
