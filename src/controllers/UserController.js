@@ -43,6 +43,7 @@ export function UserController(mongoInstance) {
         const body = await parseJSONBody(req);
         const { name, surname, email, role } = body;
 
+        // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
         if (!isValid) {
           return sendJSON(res, 400, { errors });
@@ -102,6 +103,7 @@ export function UserController(mongoInstance) {
           });
         }
 
+        // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
         if (!isValid) {
           return sendJSON(res, 400, { errors });

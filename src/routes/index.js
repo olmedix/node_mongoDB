@@ -1,5 +1,7 @@
 import { Router } from "../core/classes/class.Router.js";
 import { UserController } from "../controllers/UserController.js";
+import {authBearer, protect } from "../middlewares/authMiddleware.js";
+
 
 export function createRouter(mongoInstance) {
   const router = new Router();
@@ -9,9 +11,11 @@ export function createRouter(mongoInstance) {
   
   router.get("/users", userController.index);
   router.get("/users/:email", userController.showByEmail);
-  router.put("/users/:id", userController.update);
   router.post("/users", userController.store);
-  router.delete("/users/:id", userController.destroy);
+
+  // Rutas protegidas por middleware
+  router.put("/users/:id",protect(authBearer, userController.update));
+  router.delete("/users/:id",protect(authBearer, userController.destroy));
   
 
   
