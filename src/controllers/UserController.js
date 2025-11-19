@@ -17,7 +17,7 @@ export function UserController(mongoInstance) {
     // GET /users/:email
     showByEmail: async (req, res) => {
       try {
-        const { email } = req.params || {}; 
+        const { email } = req.params || {};
 
         if (!email) {
           console.log("Falta parámetro email");
@@ -48,7 +48,12 @@ export function UserController(mongoInstance) {
           });
         }
 
-        // Aquí podrías comprobar si existe ya un usuario con ese email usando findByEmail
+        // Verificación de email único
+        const emailExists = await mongoInstance.findByEmail(email);
+        if (emailExists) {
+          return sendJSON(res, 409, { error: "El email ya está registrado" });
+        }
+
         const newUser = await mongoInstance.create({
           name,
           surname,
