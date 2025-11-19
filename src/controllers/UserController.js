@@ -17,8 +17,7 @@ export function UserController(mongoInstance) {
     // GET /users/:email
     showByEmail: async (req, res) => {
       try {
-        const { email } = req.params || {}; // req.params lo rellenará el router cuando lo ampliemos
-        console.log("Email recibido en showByEmail:", email);
+        const { email } = req.params || {}; 
 
         if (!email) {
           console.log("Falta parámetro email");
@@ -81,6 +80,7 @@ export function UserController(mongoInstance) {
         const dataToUpdate = {};
         if ("name" in body) dataToUpdate.name = body.name;
         if ("surname" in body) dataToUpdate.surname = body.surname;
+        if ("email" in body) dataToUpdate.email = body.email;
         if ("role" in body) dataToUpdate.role = body.role;
 
         if (Object.keys(dataToUpdate).length === 0) {

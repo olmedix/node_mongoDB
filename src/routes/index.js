@@ -6,8 +6,10 @@ export function createRouter(mongoInstance) {
 
   const userController = UserController(mongoInstance);
 
+  router.put("/users/:id", userController.update);
   router.get("/users", userController.index);
   router.get("/users/:email", userController.showByEmail);
+  
 
   
   return router;

@@ -76,13 +76,14 @@ export class MongoDB {
       updated_at: new Date(),
     };
 
+
     const result = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: toSet },
       { returnDocument: "after" }
     );
 
-    return result.value;
+    return result;
   }
 
   // DELETE BY ID
