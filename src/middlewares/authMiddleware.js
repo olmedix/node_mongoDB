@@ -1,5 +1,6 @@
 import { verifyToken } from "../core/includes/jwt.js";
-import { sendJSON } from "../core/includes/inc.http.js"
+import { sendJSON } from "../core/includes/inc.http.js";
+import { isTockenRevoked } from "../core/includes/jwtBlackList.js";
 
 export function authBearer(req, res) {
   const header = req.headers["authorization"];
@@ -10,6 +11,13 @@ export function authBearer(req, res) {
   }
 
   const token = header.split(" ")[1];
+
+  // Comprobar BLACKLIST
+  if (isTockenRevoked(token)) {
+    sendJSON(res, 401, { error: "Token revocado" });
+    return false;
+  }
+
   const payload = verifyToken(token);
 
   if (!payload) {

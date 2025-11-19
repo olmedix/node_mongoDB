@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { signToken } from "../core/includes/jwt.js";
+import { revokeToken } from "../core/includes/jwtBlackList.js";
 import { sendJSON } from "../core/includes/inc.http.js";
 import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
 
@@ -46,5 +47,11 @@ export function authController(mongoInstance) {
         return sendJSON(res, 500, { error: "Error interno" });
       }
     },
+    logout: async (req, res) => {
+      if(req.token){
+        revokeToken(req.token);
+      }
+      return sendJSON(res, 200, { message: "Logout exitoso" });
+    }
   };
 }
