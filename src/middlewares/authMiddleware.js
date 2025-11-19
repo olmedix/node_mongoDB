@@ -1,23 +1,32 @@
-export function authBearer(req,res) {
+import { verifyToken } from "../core/includes/jwt.js";
+import { sendJSON } from "../core/includes/inc.http.js"
+
+export function authBearer(req, res) {
   const header = req.headers["authorization"];
 
   if (!header || !header.startsWith("Bearer ")) {
-    res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Token no proporcionado" }));
+    sendJSON(res, 401, { error: "Token no proporcionado" });
     return false;
   }
 
   const token = header.split(" ")[1];
+  const payload = verifyToken(token);
 
-  if (token !== "12345"){
-    res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Token incorrecto" }));
+  if (!payload) {
+    sendJSON(res, 401, { error: "Token inválido o expirado" });
     return false;
   }
 
-  return true;
+  // Añadimos info del usuario
+  req.user = {
+    id: payload.id,
+    email: payload.email,
+    role: payload.role,
+  };
 
+  return true;
 }
+
 
 
 export function protect(middleware, controller) {

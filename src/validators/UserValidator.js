@@ -20,6 +20,12 @@ export function validateUpdateUser(data) {
     }
   }
 
+  if ("password" in data) {
+    if (typeof data.password !== "string" || data.password.length < 6) {
+      errors.password = "La contraseña debe tener al menos 6 caracteres";
+    }
+  }
+
   if ("role" in data) {
     const validRoles = ["Admin", "User", "Guest"];
     if (typeof data.role !== "string" || !validRoles.includes(data.role)) {

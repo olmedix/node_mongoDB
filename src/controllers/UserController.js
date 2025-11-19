@@ -2,7 +2,7 @@ import { sendJSON } from "../core/includes/inc.http.js";
 import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
 import { validateUpdateUser } from "../validators/UserValidator.js";
 
-export function UserController(mongoInstance) {
+export function userController(mongoInstance) {
   return {
     // GET /users
     index: async (req, res) => {
@@ -41,7 +41,7 @@ export function UserController(mongoInstance) {
     store: async (req, res) => {
       try {
         const body = await parseJSONBody(req);
-        const { name, surname, email, role } = body;
+        const { name, surname, email,password, role } = body;
 
         // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
@@ -49,9 +49,9 @@ export function UserController(mongoInstance) {
           return sendJSON(res, 400, { errors });
         }
 
-        if (!name || !surname || !email) {
+        if (!name || !surname || !email || !password) {
           return sendJSON(res, 400, {
-            error: "name, surname y email son obligatorios",
+            error: "name, surname, email y password son obligatorios",
           });
         }
 
@@ -67,6 +67,7 @@ export function UserController(mongoInstance) {
           name,
           surname,
           email,
+          password,
           role,
         });
 

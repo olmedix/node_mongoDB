@@ -1,4 +1,5 @@
 import { MongoClient, ObjectId } from "mongodb";
+import bcrypt from "bcrypt";
 
 export class MongoDB {
   constructor({ uri, dbName }) {
@@ -36,8 +37,11 @@ export class MongoDB {
   async create(document) {
     const now = new Date();
 
+    const hashedPassword = await bcrypt.hash(document.password, 10);
+
     const object = {
       ...document,
+      password: hashedPassword,
       created_at: now,
       updated_at: now,
     };
