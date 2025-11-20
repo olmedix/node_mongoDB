@@ -1,17 +1,18 @@
 // middlewares/authMiddleware.js
 import { verifyToken } from "../core/includes/jwt.js";
-import { sendJSON } from "../core/includes/inc.http.js";
+import { sendError } from "../core/includes/inc.response.js";
+import { errorHandler } from "../core/includes/inc.error.js";
 import { createJwtBlacklistRepo } from "../core/includes/jwtBlackList.js";
 
 export function createAuthBearer(mongoDB) {
   const jwtBlacklist = createJwtBlacklistRepo(mongoDB);
 
-  // 👇 este es el middleware real
+  // este es el middleware real
   return async function authBearer(req, res) {
     const header = req.headers["authorization"];
 
     if (!header || !header.startsWith("Bearer ")) {
-      sendJSON(res, 401, { error: "Token no proporcionado" });
+      sendError(res, 401, "Token no proporcionado");
       return false;
     }
 
@@ -21,7 +22,7 @@ export function createAuthBearer(mongoDB) {
     // 1) Comprobar BLACKLIST en Mongo
     const revoked = await jwtBlacklist.isTokenRevoked(token);
     if (revoked) {
-      sendJSON(res, 401, { error: "Token revocado" });
+      sendError(res, 401, "Token revocado");
       return false;
     }
 
@@ -29,7 +30,7 @@ export function createAuthBearer(mongoDB) {
     const payload = verifyToken(token);
 
     if (!payload) {
-      sendJSON(res, 401, { error: "Token inválido o expirado" });
+      sendError(res, 401, "Token inválido o expirado");
       return false;
     }
 
@@ -44,11 +45,15 @@ export function createAuthBearer(mongoDB) {
   };
 }
 
-// PROTECT actualizado para soportar middlewares async
+
 export function protect(middleware, controller) {
   return async (req, res) => {
-    const ok = await middleware(req, res); // 👈 puede ser sync o async
+    try{
+    const ok = await middleware(req, res);
     if (!ok) return;
     return controller(req, res);
+    } catch(err){
+      return errorHandler(err,req,res);
+    }
   };
 }

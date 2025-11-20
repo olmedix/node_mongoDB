@@ -1,4 +1,4 @@
-import { sendJSON } from "../includes/inc.http.js";
+import { sendError} from "../includes/inc.response.js";
 
 export class Router {
   constructor() {
@@ -50,7 +50,7 @@ export class Router {
     });
 
     if (!route) {
-      return sendJSON(res, 404, { error: "Not found" });
+      return sendError(res, 404, "Not found");
     }
 
     // Extraer parámetros dinámicos
@@ -69,7 +69,7 @@ export class Router {
       await route.handler(req, res);
     } catch (err) {
       console.error("Error en handler:", err);
-      sendJSON(res, 500, { error: "Internal server error" });
+      sendError(res, 500, "Internal server error");
     }
   }
 }

@@ -1,5 +1,5 @@
-import { sendJSON } from "../core/includes/inc.http.js";
-import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
+import { parseJSONBody } from "../core/includes/inc.http.js";
+import { sendError, sendSuccess } from "../core/includes/inc.response.js";
 import { validateUpdateUser } from "../validators/UserValidator.js";
 
 export function userController(mongoInstance) {
@@ -8,10 +8,10 @@ export function userController(mongoInstance) {
     index: async (req, res) => {
       try {
         const users = await mongoInstance.findAll();
-        sendJSON(res, 200, users);
+        sendSuccess(res, 200, users);
       } catch (err) {
         console.error("Error en UserController.index:", err);
-        sendJSON(res, 500, { error: "Error al listar usuarios" });
+        sendError(res, 500, "Error al listar usuarios");
       }
     },
 
@@ -22,18 +22,18 @@ export function userController(mongoInstance) {
 
         if (!email) {
           console.log("Falta parámetro email");
-          return sendJSON(res, 400, { error: "Falta parámetro email" });
+          return sendError(res, 400, "Falta parámetro email");
         }
 
         const user = await mongoInstance.findByEmail(email);
         if (!user) {
-          return sendJSON(res, 404, { error: "Usuario no encontrado" });
+          return sendError(res, 404, "Usuario no encontrado");
         }
 
-        sendJSON(res, 200, user);
+        sendSuccess(res, 200, user);
       } catch (err) {
         console.error("Error en UserController.showByEmail:", err);
-        sendJSON(res, 500, { error: "Error al obtener usuario" });
+        sendError(res, 500, "Error al obtener usuario");
       }
     },
 
@@ -46,19 +46,17 @@ export function userController(mongoInstance) {
         // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
         if (!isValid) {
-          return sendJSON(res, 400, { errors });
+          return sendError(res, 400, errors);
         }
 
         if (!name || !surname || !email || !password) {
-          return sendJSON(res, 400, {
-            error: "name, surname, email y password son obligatorios",
-          });
+          return sendError(res, 400, "name, surname, email y password son obligatorios");
         }
 
         // Verificación de email único
         const emailExists = await mongoInstance.findByEmail(email);
         if (emailExists) {
-          return sendJSON(res, 409, { error: "El email ya está registrado" });
+          return sendError(res, 409, "El email ya está registrado");
         }
 
         
@@ -71,13 +69,13 @@ export function userController(mongoInstance) {
           role,
         });
 
-        sendJSON(res, 201, newUser);
+        sendSuccess(res, 201, newUser);
       } catch (err) {
         console.error("Error en UserController.store:", err);
         if (err.message.includes("Body JSON inválido")) {
-          return sendJSON(res, 400, { error: "JSON inválido en el body" });
+          return sendError(res, 400, "JSON inválido en el body");
         }
-        sendJSON(res, 500, { error: "Error al crear usuario" });
+        sendError(res, 500, "Error al crear usuario");
       }
     },
 
@@ -86,7 +84,7 @@ export function userController(mongoInstance) {
       try {
         const { id } = req.params || {};
         if (!id) {
-          return sendJSON(res, 400, { error: "Falta parámetro id" });
+          return sendError(res, 400, "Falta parámetro id");
         }
 
         const body = await parseJSONBody(req);
@@ -99,30 +97,28 @@ export function userController(mongoInstance) {
         if ("role" in body) dataToUpdate.role = body.role;
 
         if (Object.keys(dataToUpdate).length === 0) {
-          return sendJSON(res, 400, {
-            error: "No hay campos válidos para actualizar",
-          });
+          return sendError(res, 400, "No hay campos válidos para actualizar");
         }
 
         // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
         if (!isValid) {
-          return sendJSON(res, 400, { errors });
+          return sendError(res, 400, errors);
         }
 
         const updatedUser = await mongoInstance.updateById(id, dataToUpdate);
 
         if (!updatedUser) {
-          return sendJSON(res, 404, { error: "Usuario no encontrado" });
+          return sendError(res, 404, "Usuario no encontrado");
         }
 
-        sendJSON(res, 200, updatedUser);
+        sendSuccess(res, 200, updatedUser);
       } catch (err) {
         console.error("Error en UserController.update:", err);
         if (err.message.includes("Body JSON inválido")) {
-          return sendJSON(res, 400, { error: "JSON inválido en el body" });
+          return sendError(res, 400, "JSON inválido en el body");
         }
-        sendJSON(res, 500, { error: "Error al actualizar usuario" });
+        sendError(res, 500, "Error al actualizar usuario");
       }
     },
 
@@ -131,19 +127,19 @@ export function userController(mongoInstance) {
       try {
         const { id } = req.params || {};
         if (!id) {
-          return sendJSON(res, 400, { error: "Falta parámetro id" });
+          return sendError(res, 400, "Falta parámetro id");
         }
 
         const deleted = await mongoInstance.deleteById(id);
 
         if (!deleted) {
-          return sendJSON(res, 404, { error: "Usuario no encontrado" });
+          return sendError(res, 404, "Usuario no encontrado");
         }
 
-        sendJSON(res, 200, { success: true });
+        sendSuccess(res, 200, { success: true });
       } catch (err) {
         console.error("Error en UserController.destroy:", err);
-        sendJSON(res, 500, { error: "Error al eliminar usuario" });
+        sendError(res, 500, "Error al eliminar usuario");
       }
     },
   };

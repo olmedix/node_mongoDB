@@ -2,6 +2,7 @@ import { Router } from "../core/classes/class.Router.js";
 import { userController } from "../controllers/UserController.js";
 import { authController } from "../controllers/AuthController.js";
 import { createAuthBearer, protect } from "../middlewares/authMiddleware.js";
+import { wrapController } from "../core/includes/inc.error.js";
 
 
 export function createRouter(mongoInstance) {
@@ -13,12 +14,12 @@ export function createRouter(mongoInstance) {
   const authBearer = createAuthBearer(mongoInstance);
 
   
-  router.get("/users", userControllerInstance.index);
-  router.get("/users/:email", userControllerInstance.showByEmail);
-  router.post("/users", userControllerInstance.store);
+  router.get("/users",wrapController(userControllerInstance.index));
+  router.get("/users/:email", wrapController(userControllerInstance.showByEmail));
+  router.post("/users", wrapController(userControllerInstance.store));
 
   // Login
-  router.post("/login", authControllerInstance.login);
+  router.post("/login", wrapController(authControllerInstance.login));
   // Logout
   router.post("/logout", protect(authBearer, authControllerInstance.logout));
 

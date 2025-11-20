@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import { signToken } from "../core/includes/jwt.js";
 import { createJwtBlacklistRepo } from "../core/includes/jwtBlackList.js";
-import { sendJSON } from "../core/includes/inc.http.js";
-import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
+import { sendError,sendSuccess} from "../core/includes/inc.response.js";
+import { parseJSONBody } from "../core/includes/inc.http.js";
 
 export function authController(mongoInstance) {
   return {
@@ -11,19 +11,17 @@ export function authController(mongoInstance) {
         const { email, password } = await parseJSONBody(req);
 
         if (!email || !password) {
-          return sendJSON(res, 400, {
-            error: "Email y password son obligatorios",
-          });
+          return sendError(res, 400, "Email y password son obligatorios");
         }
 
         const user = await mongoInstance.findByEmail(email);
         if (!user) {
-          return sendJSON(res, 401, { error: "Credenciales inválidas" });
+          return sendError(res, 401, "Credenciales inválidas");
         }
 
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-          return sendJSON(res, 401, { error: "Credenciales inválidas" });
+          return sendError(res, 401, "Credenciales inválidas");
         }
 
         // GENERAR EL TOKEN AQUÍ
@@ -33,7 +31,7 @@ export function authController(mongoInstance) {
           role: user.role,
         });
 
-        return sendJSON(res, 200, {
+        return sendSuccess(res, 200, {
           token,
           user: {
             id: user._id.toString(),
@@ -43,8 +41,7 @@ export function authController(mongoInstance) {
           },
         });
       } catch (err) {
-        console.error("Error en login:", err);
-        return sendJSON(res, 500, { error: "Error interno" });
+        return sendError(res, 500, "Error interno");
       }
     },
     logout: async (req, res) => {
@@ -60,7 +57,8 @@ export function authController(mongoInstance) {
       if (frase !== "") {
         jwtBlacklist.revokeToken(frase.split(" ")[1].trim());
       }
-      return sendJSON(res, 200, { message: "Logout exitoso" });
+
+      return sendSuccess(res, 200,"Logout exitoso");
     },
   };
 }
