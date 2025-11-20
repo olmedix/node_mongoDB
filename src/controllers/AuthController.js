@@ -26,7 +26,7 @@ export function authController(mongoInstance) {
           return sendJSON(res, 401, { error: "Credenciales inválidas" });
         }
 
-        // 👉 GENERAR EL TOKEN AQUÍ
+        // GENERAR EL TOKEN AQUÍ
         const token = signToken({
           id: user._id.toString(),
           email: user.email,
@@ -48,8 +48,16 @@ export function authController(mongoInstance) {
       }
     },
     logout: async (req, res) => {
-      if(req.token){
-        revokeToken(req.token);
+      let frase="";
+
+      req.rawHeaders.forEach(element => {
+        if(element.toString().includes("Bearer")){
+          frase=element.toString();
+        } 
+      });
+
+      if(frase !== ""){
+        revokeToken(frase.split(" ")[1].trim());
       }
       return sendJSON(res, 200, { message: "Logout exitoso" });
     }

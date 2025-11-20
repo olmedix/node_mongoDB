@@ -1,6 +1,6 @@
 import { verifyToken } from "../core/includes/jwt.js";
 import { sendJSON } from "../core/includes/inc.http.js";
-import { isTockenRevoked } from "../core/includes/jwtBlackList.js";
+import { isTockenRevoked, revokeToken } from "../core/includes/jwtBlackList.js";
 
 export function authBearer(req, res) {
   const header = req.headers["authorization"];
@@ -10,7 +10,7 @@ export function authBearer(req, res) {
     return false;
   }
 
-  const token = header.split(" ")[1];
+  const token = header.split(" ")[1].trim();
 
   // Comprobar BLACKLIST
   if (isTockenRevoked(token)) {
