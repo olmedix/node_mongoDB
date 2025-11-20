@@ -2,6 +2,7 @@ import http from "http";
 import { config } from "dotenv";
 import { MongoDB } from "./core/classes/class.MongoDB.js";
 import { createRouter } from "./routes/index.js";
+import { logInfo } from "./core/includes/inc.logger.js";
 
 config(); // carga .env
 
@@ -22,5 +23,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
+  logInfo(`🚀 Servidor escuchando en http://localhost:${PORT}`);
 });
