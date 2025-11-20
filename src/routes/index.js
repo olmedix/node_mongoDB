@@ -17,6 +17,7 @@ export function createRouter(mongoInstance) {
 
   // Login
   router.post("/login", authControllerInstance.login);
+  // Logout
   router.post("/logout", protect(authBearer, authControllerInstance.logout));
 
   // Rutas protegidas por middleware

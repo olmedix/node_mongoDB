@@ -11,8 +11,6 @@ export function isTockenRevoked(token) {
   if (revokedTokens.has(token.trim())) {
     value = true;
   }
-
-  console.log("Valor devuelto:", value);
   return value;
 }
 

@@ -1,6 +1,6 @@
 import { verifyToken } from "../core/includes/jwt.js";
 import { sendJSON } from "../core/includes/inc.http.js";
-import { isTockenRevoked, revokeToken } from "../core/includes/jwtBlackList.js";
+import { isTockenRevoked} from "../core/includes/jwtBlackList.js";
 
 export function authBearer(req, res) {
   const header = req.headers["authorization"];
