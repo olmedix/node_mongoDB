@@ -1,7 +1,7 @@
 import { Router } from "../core/classes/class.Router.js";
 import { userController } from "../controllers/UserController.js";
 import { authController } from "../controllers/AuthController.js";
-import {authBearer, protect } from "../middlewares/authMiddleware.js";
+import { createAuthBearer, protect } from "../middlewares/authMiddleware.js";
 
 
 export function createRouter(mongoInstance) {
@@ -9,6 +9,8 @@ export function createRouter(mongoInstance) {
 
   const userControllerInstance = userController(mongoInstance);
   const authControllerInstance = authController(mongoInstance);
+
+  const authBearer = createAuthBearer(mongoInstance);
 
   
   router.get("/users", userControllerInstance.index);

@@ -1,46 +1,54 @@
+// middlewares/authMiddleware.js
 import { verifyToken } from "../core/includes/jwt.js";
 import { sendJSON } from "../core/includes/inc.http.js";
-import { isTockenRevoked} from "../core/includes/jwtBlackList.js";
+import { createJwtBlacklistRepo } from "../core/includes/jwtBlackList.js";
 
-export function authBearer(req, res) {
-  const header = req.headers["authorization"];
+export function createAuthBearer(mongoDB) {
+  const jwtBlacklist = createJwtBlacklistRepo(mongoDB);
 
-  if (!header || !header.startsWith("Bearer ")) {
-    sendJSON(res, 401, { error: "Token no proporcionado" });
-    return false;
-  }
+  // 👇 este es el middleware real
+  return async function authBearer(req, res) {
+    const header = req.headers["authorization"];
 
-  const token = header.split(" ")[1].trim();
+    if (!header || !header.startsWith("Bearer ")) {
+      sendJSON(res, 401, { error: "Token no proporcionado" });
+      return false;
+    }
 
-  // Comprobar BLACKLIST
-  if (isTockenRevoked(token)) {
-    sendJSON(res, 401, { error: "Token revocado" });
-    return false;
-  }
+    const token = header.split(" ")[1].trim();
+    req.token = token; // lo guardamos por si lo necesita logout
 
-  const payload = verifyToken(token);
+    // 1) Comprobar BLACKLIST en Mongo
+    const revoked = await jwtBlacklist.isTokenRevoked(token);
+    if (revoked) {
+      sendJSON(res, 401, { error: "Token revocado" });
+      return false;
+    }
 
-  if (!payload) {
-    sendJSON(res, 401, { error: "Token inválido o expirado" });
-    return false;
-  }
+    // 2) Verificar JWT
+    const payload = verifyToken(token);
 
-  // Añadimos info del usuario
-  req.user = {
-    id: payload.id,
-    email: payload.email,
-    role: payload.role,
+    if (!payload) {
+      sendJSON(res, 401, { error: "Token inválido o expirado" });
+      return false;
+    }
+
+    // 3) Añadimos info del usuario a la request
+    req.user = {
+      id: payload.id,
+      email: payload.email,
+      role: payload.role,
+    };
+
+    return true;
   };
-
-  return true;
 }
 
-
-
+// PROTECT actualizado para soportar middlewares async
 export function protect(middleware, controller) {
-  return (req, res) => {
-    const ok = middleware(req, res);
+  return async (req, res) => {
+    const ok = await middleware(req, res); // 👈 puede ser sync o async
     if (!ok) return;
-    controller(req, res);
+    return controller(req, res);
   };
 }

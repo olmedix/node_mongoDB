@@ -1,16 +1,18 @@
-const revokedTokens = new Set();
+export function createJwtBlacklistRepo(mongoDB) {
+  const col = mongoDB.getCollection("jwtBlackList"); 
 
-export function revokeToken(token) {
-  revokedTokens.add(token);
+  return {
+    async revokeToken(token, exp) {
+      await col.insertOne({
+        token,
+        exp,         
+        createdAt: new Date(),
+      });
+    },
+
+    async isTokenRevoked(token) {
+      const doc = await col.findOne({ token });
+      return !!doc;
+    },
+  };
 }
-
-export function isTockenRevoked(token) {
-
-  let value = false;  
-
-  if (revokedTokens.has(token.trim())) {
-    value = true;
-  }
-  return value;
-}
-

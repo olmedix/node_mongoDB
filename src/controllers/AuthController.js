@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { signToken } from "../core/includes/jwt.js";
-import { revokeToken } from "../core/includes/jwtBlackList.js";
+import { createJwtBlacklistRepo } from "../core/includes/jwtBlackList.js";
 import { sendJSON } from "../core/includes/inc.http.js";
 import { parseJSONBody } from "../core/includes/inc.jsonBody.js";
 
@@ -48,18 +48,19 @@ export function authController(mongoInstance) {
       }
     },
     logout: async (req, res) => {
-      let frase="";
+      const jwtBlacklist = createJwtBlacklistRepo(mongoInstance);
+      let frase = "";
 
-      req.rawHeaders.forEach(element => {
-        if(element.toString().includes("Bearer")){
-          frase=element.toString();
-        } 
+      req.rawHeaders.forEach((element) => {
+        if (element.toString().includes("Bearer")) {
+          frase = element.toString();
+        }
       });
 
-      if(frase !== ""){
-        revokeToken(frase.split(" ")[1].trim());
+      if (frase !== "") {
+        jwtBlacklist.revokeToken(frase.split(" ")[1].trim());
       }
       return sendJSON(res, 200, { message: "Logout exitoso" });
-    }
+    },
   };
 }

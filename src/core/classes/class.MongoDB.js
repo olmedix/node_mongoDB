@@ -7,6 +7,8 @@ export class MongoDB {
     this.dbName = dbName;
     this.client = new MongoClient(this.uri);
     this.db = null;
+    this.collections = {};
+    this.collection = null;
   }
 
   async connect() {
@@ -23,8 +25,24 @@ export class MongoDB {
   useCollection(name) {
     if (!this.db)
       throw new Error("Primero debes conectar con la base de datos");
-    this.collection = this.db.collection(name);
-    return this;
+
+    const col = this.db.collection(name);
+    this.collection = col;             
+    this.collections[name] = col;       
+
+    return this; 
+  }
+
+  
+  getCollection(name) {
+    if (!this.db)
+      throw new Error("Primero debes conectar con la base de datos");
+
+    if (!this.collections[name]) {
+      this.collections[name] = this.db.collection(name);
+    }
+
+    return this.collections[name];
   }
 
   async disconnect() {
@@ -79,7 +97,6 @@ export class MongoDB {
       ...data,
       updated_at: new Date(),
     };
-
 
     const result = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) },
