@@ -46,14 +46,28 @@ export function createAuthBearer(mongoDB) {
 }
 
 
-export function protect(middleware, controller) {
+// Podemos encadenasr varios middlewares y un controller final
+// handlers = [mw1, mw2, ..., controllerFinal]
+export function protect(...handlers) {
   return async (req, res) => {
-    try{
-    const ok = await middleware(req, res);
-    if (!ok) return;
-    return controller(req, res);
-    } catch(err){
-      return errorHandler(err,req,res);
+    try {
+      const controller = handlers[handlers.length - 1];
+
+      const middlewares = handlers.slice(0, -1);
+
+      // Ejecutamos cada middleware en orden
+      for (const middleware of middlewares) {
+        const result = await middleware(req, res);
+
+        // Si el middleware devuelve false, cortamos la cadena.
+        if (result === false) {
+          return;
+        }
+      }
+      await controller(req, res);
+    } catch (err) {
+      errorHandler(err, req, res);
     }
   };
 }
+
