@@ -31,7 +31,7 @@ export function createRouter(mongoInstance) {
     protect(authBearer, requireRole("admin","Guest"), userControllerInstance.index)
   );
 
-  // Rutas protegidas por middleware
+  // Rutas protegidas por middlewarE , bearer y usuario propio y administrador
   router.put("/users/:id", protect(authBearer, requireSelfOrAdmin, userControllerInstance.update));
   router.delete(
     "/users/:id",

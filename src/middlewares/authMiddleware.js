@@ -64,7 +64,7 @@ export function requireSelfOrAdmin(req, res) {
 
 export function requireRole(...allowedRoles) {
   return (req, res) => {
-    const userRole = req.user.role;
+    const userRole = req.user.role.toLowerCase();
 
     if (!allowedRoles.includes(userRole)) {
       sendJSON(res, 403, {
