@@ -27,13 +27,12 @@ export class MongoDB {
       throw new Error("Primero debes conectar con la base de datos");
 
     const col = this.db.collection(name);
-    this.collection = col;             
-    this.collections[name] = col;       
+    this.collection = col;
+    this.collections[name] = col;
 
-    return this; 
+    return this;
   }
 
-  
   getCollection(name) {
     if (!this.db)
       throw new Error("Primero debes conectar con la base de datos");
@@ -69,7 +68,7 @@ export class MongoDB {
     };
   }
 
-   async createUser(document) {
+  async createUser(document) {
     const now = new Date();
 
     const hashedPassword = await bcrypt.hash(document.password, 10);
@@ -133,5 +132,34 @@ export class MongoDB {
   async deleteById(id) {
     const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
     return result.deletedCount === 1;
+  }
+
+  // PAGINACIÓN Y FILTROS
+  async findPaginated(filter = {}, options = {}) {
+    const page = Number(options.page) || 1;
+    const limit = Number(options.limit) || 10;
+
+    // aseguramos valores sanos
+    const safePage = page < 1 ? 1 : page;
+    const safeLimit = limit < 1 ? 1 : limit > 50 ? 50 : limit; // max 50 por página
+
+    // Esencial para paginar, es el que hace que te saltes los registros anteriores al cambiar de pagina.
+    const skip = (safePage - 1) * safeLimit;
+
+    // Ejecutamos en paralelo: datos + total
+    const [items, total] = await Promise.all([
+      this.collection.find(filter).skip(skip).limit(safeLimit).toArray(),
+      this.collection.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / safeLimit) || 1;
+
+    return {
+      items,
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages,
+    };
   }
 }
