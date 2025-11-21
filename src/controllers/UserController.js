@@ -5,13 +5,46 @@ import { validateUpdateUser } from "../validators/UserValidator.js";
 export function userController(mongoInstance) {
   return {
     // GET /users
-    index: async (req, res) => {
+     index: async (req, res) => {
       try {
-        const users = await mongoInstance.findAll();
-        sendSuccess(res, 200, users);
+        // 1. Parsear query params desde req.url
+        const baseUrl = `http://${req.headers.host}`; // necesario para URL en Node puro
+        const url = new URL(req.url, baseUrl);
+
+        const pageParam  = url.searchParams.get("page");
+        const limitParam = url.searchParams.get("limit");
+        const role       = url.searchParams.get("role"); // filtro simple por rol
+
+        // 2. Convertir page y limit a números con valores por defecto
+        const page  = pageParam  ? parseInt(pageParam, 10)  : 1;
+        const limit = limitParam ? parseInt(limitParam, 10) : 10;
+
+        // 3. Construir filtro para Mongo
+        const filter = {};
+        if (role) {
+          filter.role = role; // por ejemplo "admin" o "user"
+        }
+
+        // 4. Pedir datos paginados a la capa de datos
+        const { items, total, totalPages, limit: usedLimit, page: usedPage } =
+          await mongoInstance.findPaginated(filter, { page, limit });
+
+        // 5. Respuesta estandarizada
+        return sendSuccess(res, 200, {
+          users: items,
+          pagination: {
+            page: usedPage,
+            limit: usedLimit,
+            total,
+            totalPages,
+          },
+          filters: {
+            role: role || null,
+          },
+        });
       } catch (err) {
         console.error("Error en UserController.index:", err);
-        sendError(res, 500, "Error al listar usuarios");
+        return sendError(res, 500, "Error al listar usuarios");
       }
     },
 
@@ -41,7 +74,7 @@ export function userController(mongoInstance) {
     store: async (req, res) => {
       try {
         const body = await parseJSONBody(req);
-        const { name, surname, email,password, role } = body;
+        const { name, surname, email, password, role } = body;
 
         // Validación de datos
         const { isValid, errors } = validateUpdateUser(body);
@@ -50,7 +83,11 @@ export function userController(mongoInstance) {
         }
 
         if (!name || !surname || !email || !password) {
-          return sendError(res, 400, "name, surname, email y password son obligatorios");
+          return sendError(
+            res,
+            400,
+            "name, surname, email y password son obligatorios"
+          );
         }
 
         // Verificación de email único
@@ -59,7 +96,7 @@ export function userController(mongoInstance) {
           return sendError(res, 409, "El email ya está registrado");
         }
 
-        const newUser = await mongoInstance.createUser({
+        const newUser = await mongoInstance.create({
           name,
           surname,
           email,
