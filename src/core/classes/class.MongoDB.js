@@ -55,6 +55,23 @@ export class MongoDB {
   async create(document) {
     const now = new Date();
 
+    const object = {
+      ...document,
+      created_at: now,
+      updated_at: now,
+    };
+
+    const result = await this.collection.insertOne(object);
+
+    return {
+      ...object,
+      _id: result.insertedId,
+    };
+  }
+
+   async createUser(document) {
+    const now = new Date();
+
     const hashedPassword = await bcrypt.hash(document.password, 10);
 
     const object = {

@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 
-export async function validateProject(data, mongoInstance) {
+export async function validateProject(data, mongoUser) {
   const errors = {};
 
   // NAME
@@ -25,17 +25,20 @@ export async function validateProject(data, mongoInstance) {
   } else {
 
     // ObjectId válido
+    
     if (!ObjectId.isValid(data.ownerId)) {
       errors.ownerId = "ownerId debe ser un ObjectId válido";
     } else {
       // Verificar que existe en DB
-      const user = await mongoInstance.findById(data.ownerId);
+      const user = await mongoUser.findById(data.ownerId);
 
       if (!user) {
         errors.ownerId = "El ownerId no corresponde a ningún usuario";
       }
     }
+      
   }
+    
 
   return {
     isValid: Object.keys(errors).length === 0,

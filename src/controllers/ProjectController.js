@@ -2,12 +2,12 @@ import { parseJSONBody } from "../core/includes/inc.http.js";
 import { sendError, sendSuccess } from "../core/includes/inc.response.js";
 import { validateProject } from "../validators/ProjectValidator.js";
 
-export function projectController(mongoInstance) {
+export function projectController( mongoDBProject,mongoDBUser) {
   return {
     // GET /projects
     index: async (req, res) => {
       try {
-        const projects = await mongoInstance.findAll();
+        const projects = await mongoDBProject.findAll();
         sendSuccess(res, 200, projects);
       } catch (err) {
         sendError(res, 500, "Error al listar projects");
@@ -18,10 +18,10 @@ export function projectController(mongoInstance) {
     // GET /projects/:id
     indexByOwnerId: async (req, res) => {
       try {
-        const { id } = req.params || {};
-        if (!id) return sendError(res, 400, "Falta parámetro id");
+        const { ownerId } = req.params || {};
+        if (!ownerId) return sendError(res, 400, "Falta parámetro id");
 
-        const projects = await mongoInstance.find({ ownerId: "id" });
+        const projects = await mongoDBProject.find({ ownerId});
         sendSuccess(res, 200, projects);
       } catch (error) {
         sendError(res, 500, "Error al listar projects");
@@ -35,7 +35,7 @@ export function projectController(mongoInstance) {
         const { name, description, ownerId } = body;
 
         // Validación de datos
-        const { isValid, errors } = validateProject(body,mongoInstance);
+        const { isValid, errors } = await validateProject(body,mongoDBUser);
         if (!isValid) {
           return sendError(res, 400, errors);
         }
@@ -48,11 +48,12 @@ export function projectController(mongoInstance) {
           );
         }
 
-        const newProject = await mongoInstance.create({
+        const newProject = await mongoDBProject.create({
           name,
           description,
           ownerId,
         });
+        console.log(newProject);
 
         sendSuccess(res, 200, newProject);
       } catch (error) {
@@ -76,26 +77,26 @@ export function projectController(mongoInstance) {
           return sendError(res, 400, "No hay campos válidos para actualizar");
 
         // Validación de datos
-        const { isValid, errors } = validateProject(body,mongoInstance);
+        const { isValid, errors } = await validateProject(body,mongoDBUser);
         if (!isValid) return sendError(res, 400, errors);
 
-        const updatedProject = await mongoInstance.updateById(id, dataToUpdate);
+        const updatedProject = await mongoDBProject.updateById(id, dataToUpdate);
 
         if (!updatedProject)
           return sendError(res, 404, "Project no encontrado");
 
-        sendSuccess(res, 200, updatedProject);
+        return sendSuccess(res, 200, updatedProject);
       } catch (error) {
         sendError(res, 500, "Error al actualizar el project");
       }
     },
 
-    delete: async (req, res) => {
+    destroy: async (req, res) => {
       try {
         const { id } = req.params || {};
         if (!id) return sendError(res, 400, "Falta el parámetro id");
 
-        const deleted = await mongoInstance.deleteById(id);
+        const deleted = await mongoDBProject.deleteById(id);
         if (!deleted) sendError(res, 404, "Project no encontrado");
 
         sendSuccess(res, 200, { success: true });

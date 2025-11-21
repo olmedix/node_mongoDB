@@ -9,14 +9,18 @@ config(); // carga .env
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME;
-const COLLECTION_NAME = "users";
 
 // Conectar a la base de datos
-const mongoDB = new MongoDB({ uri: MONGO_URI, dbName: DB_NAME});
-await mongoDB.connect();
-await mongoDB.useCollection(COLLECTION_NAME);
+const mongoDBUser = new MongoDB({ uri: MONGO_URI, dbName: DB_NAME});
+await mongoDBUser.connect();
+await mongoDBUser.useCollection("users");
 
-const router = createRouter(mongoDB);
+// Conectar a la base de datos
+const mongoDBProject = new MongoDB({ uri: MONGO_URI, dbName: DB_NAME});
+await mongoDBProject.connect();
+await mongoDBProject.useCollection("projects");
+
+const router = createRouter(mongoDBUser,mongoDBProject);
 
 const server = http.createServer((req, res) => {
   router.handle(req, res);
