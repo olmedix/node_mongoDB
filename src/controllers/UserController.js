@@ -59,8 +59,6 @@ export function userController(mongoInstance) {
           return sendError(res, 409, "El email ya está registrado");
         }
 
-        
-
         const newUser = await mongoInstance.create({
           name,
           surname,
