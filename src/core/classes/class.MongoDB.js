@@ -104,6 +104,11 @@ export class MongoDB {
     return this.collection.findOne({ email });
   }
 
+  // READ ONE BY OWNERID
+  async findByOwnerId(ownerId) {
+    return this.collection.find({ ownerId: ownerId }).toArray();
+  }
+
   // UPDATE BY ID
   async updateById(id, data) {
     if (!data || typeof data !== "object" || Array.isArray(data)) {

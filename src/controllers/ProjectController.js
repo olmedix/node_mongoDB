@@ -2,7 +2,7 @@ import { parseJSONBody } from "../core/includes/inc.http.js";
 import { sendError, sendSuccess } from "../core/includes/inc.response.js";
 import { validateProject } from "../validators/ProjectValidator.js";
 
-export function projectController( mongoDBProject,mongoDBUser) {
+export function projectController(mongoDBProject, mongoDBUser) {
   return {
     // GET /projects
     index: async (req, res) => {
@@ -20,9 +20,11 @@ export function projectController( mongoDBProject,mongoDBUser) {
       try {
         const { ownerId } = req.params || {};
         if (!ownerId) return sendError(res, 400, "Falta parámetro id");
+        
+        const projects = await mongoDBProject.findByOwnerId(ownerId);
 
-        const projects = await mongoDBProject.find({ ownerId});
-        sendSuccess(res, 200, projects);
+        console.log("proyecto: " + projects);
+        return sendSuccess(res, 200, projects);
       } catch (error) {
         sendError(res, 500, "Error al listar projects");
       }
@@ -35,7 +37,7 @@ export function projectController( mongoDBProject,mongoDBUser) {
         const { name, description, ownerId } = body;
 
         // Validación de datos
-        const { isValid, errors } = await validateProject(body,mongoDBUser);
+        const { isValid, errors } = await validateProject(body, mongoDBUser);
         if (!isValid) {
           return sendError(res, 400, errors);
         }
@@ -77,10 +79,13 @@ export function projectController( mongoDBProject,mongoDBUser) {
           return sendError(res, 400, "No hay campos válidos para actualizar");
 
         // Validación de datos
-        const { isValid, errors } = await validateProject(body,mongoDBUser);
+        const { isValid, errors } = await validateProject(body, mongoDBUser);
         if (!isValid) return sendError(res, 400, errors);
 
-        const updatedProject = await mongoDBProject.updateById(id, dataToUpdate);
+        const updatedProject = await mongoDBProject.updateById(
+          id,
+          dataToUpdate
+        );
 
         if (!updatedProject)
           return sendError(res, 404, "Project no encontrado");
