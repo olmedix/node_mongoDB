@@ -1,6 +1,6 @@
 import { Router } from "../core/classes/class.Router.js";
 import { createAuthBearer,requireRole,requireSelfOrAdmin, protect } from "../middlewares/authMiddleware.js";
-import { rateLimitLogin } from "../middlewares/rateLimitLogin.js";
+import { rateLimitLogin, rateLimitSignup } from "../middlewares/rateLimitLogin.js";
 import { wrapController } from "../core/includes/inc.error.js";
 import { userController } from "../controllers/UserController.js";
 import { authController } from "../controllers/AuthController.js";
@@ -19,7 +19,7 @@ export function createRouter(mongoDBUser,mongoDBProject) {
 
   // Rutas públicas
   router.get("/users/:email",wrapController(userControllerInstance.showByEmail));
-  router.post("/users", wrapController(userControllerInstance.store));
+  router.post("/users", protect(rateLimitSignup,userControllerInstance.store));
 
   // Login
   router.post("/login", protect(rateLimitLogin,authControllerInstance.login));
