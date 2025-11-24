@@ -1,5 +1,6 @@
 import { Router } from "../core/classes/class.Router.js";
 import { createAuthBearer,requireRole,requireSelfOrAdmin, protect } from "../middlewares/authMiddleware.js";
+import { rateLimitLogin } from "../middlewares/rateLimitLogin.js";
 import { wrapController } from "../core/includes/inc.error.js";
 import { userController } from "../controllers/UserController.js";
 import { authController } from "../controllers/AuthController.js";
@@ -21,7 +22,7 @@ export function createRouter(mongoDBUser,mongoDBProject) {
   router.post("/users", wrapController(userControllerInstance.store));
 
   // Login
-  router.post("/login", wrapController(authControllerInstance.login));
+  router.post("/login", protect(rateLimitLogin,authControllerInstance.login));
   // Logout
   router.post("/logout", protect(authBearer, authControllerInstance.logout));
 
