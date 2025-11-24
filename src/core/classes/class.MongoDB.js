@@ -134,6 +134,11 @@ export class MongoDB {
     return result.deletedCount === 1;
   }
 
+   async deleteByEmail(email) {
+    const result = await this.collection.deleteOne({email});
+    return result.deletedCount === 1;
+  }
+
   // PAGINACIÓN Y FILTROS
   async findPaginated(filter = {}, options = {}) {
     const page = Number(options.page) || 1;
