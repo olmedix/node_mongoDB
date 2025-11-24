@@ -40,11 +40,12 @@ export function createRateLimit({maxRequests,windowTime,route}) {
 
     // Si lo ha intentado demsiadas veces, Error.
     if (entry.count >= maxRequests) {
-      return sendError(
+        sendError(
         res,
         429,
         "Demasiados intentos. Inténtelo más tarde."
       );
+      return false;
     }
 
     entry.count += 1;
