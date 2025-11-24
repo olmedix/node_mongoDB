@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { parseJSONBody } from "../core/includes/inc.http.js";
 import { sendError, sendSuccess } from "../core/includes/inc.response.js";
 import { validateUpdateUser } from "../validators/UserValidator.js";
@@ -97,12 +98,13 @@ export function userController(mongoInstance) {
         if (emailExists) {
           return sendError(res, 409, "El email ya está registrado");
         }
+        const pass = await bcrypt.hash(password, 10); 
 
         const newUser = await mongoInstance.create({
           name,
           surname,
           email,
-          password,
+          password:pass,
           role,
         });
 
