@@ -2,8 +2,8 @@ export function validateUpdateUser(data) {
   const errors = {};
 
   if ("name" in data) {
-    if (typeof data.name !== "string" || data.name.trim().length < 8) {
-      errors.name = "El nombre debe tener al menos 8 caracteres";
+    if (typeof data.name !== "string" || data.name.trim().length < 4) {
+      errors.name = "El nombre debe tener al menos 4 caracteres";
     }
   }
 

@@ -17,10 +17,7 @@ export function createRouter(mongoDBUser,mongoDBProject) {
 
 
   // Rutas públicas
-  router.get(
-    "/users/:email",
-    wrapController(userControllerInstance.showByEmail)
-  );
+  router.get("/users/:email",wrapController(userControllerInstance.showByEmail));
   router.post("/users", wrapController(userControllerInstance.store));
 
   // Login
@@ -29,8 +26,8 @@ export function createRouter(mongoDBUser,mongoDBProject) {
   router.post("/logout", protect(authBearer, authControllerInstance.logout));
 
    // Ruta para administradores y managers
-  router.get("/users",protect(authBearer, requireRole("admin","Guest"), userControllerInstance.index)
-  );
+  //router.get("/users",protect(authBearer, requireRole("admin","Guest"), userControllerInstance.index));
+  router.get("/users",protect(userControllerInstance.index));
 
   // Rutas protegidas por middlewarE , bearer y usuario propio y administrador
   router.put("/users/:id", protect(authBearer, requireSelfOrAdmin, userControllerInstance.update));

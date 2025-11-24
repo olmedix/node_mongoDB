@@ -5,31 +5,33 @@ import { validateUpdateUser } from "../validators/UserValidator.js";
 export function userController(mongoInstance) {
   return {
     // GET /users
+    // Exemple: http://localhost:3000/users?page=1&limit=5&role=Guest
+
      index: async (req, res) => {
       try {
-        // 1. Parsear query params desde req.url
+        // Parsear query params desde req.url
         const baseUrl = `http://${req.headers.host}`; // necesario para URL en Node puro
         const url = new URL(req.url, baseUrl);
 
         const pageParam  = url.searchParams.get("page");
         const limitParam = url.searchParams.get("limit");
-        const role       = url.searchParams.get("role"); // filtro simple por rol
+        const role       = url.searchParams.get("role"); 
 
-        // 2. Convertir page y limit a números con valores por defecto
+        // Convertir page y limit a números con valores por defecto
         const page  = pageParam  ? parseInt(pageParam, 10)  : 1;
         const limit = limitParam ? parseInt(limitParam, 10) : 10;
 
-        // 3. Construir filtro para Mongo
+        // Construir filtro para Mongo
         const filter = {};
         if (role) {
           filter.role = role; // por ejemplo "admin" o "user"
         }
 
-        // 4. Pedir datos paginados a la capa de datos
+        // Pedir datos paginados a la capa de datos
         const { items, total, totalPages, limit: usedLimit, page: usedPage } =
           await mongoInstance.findPaginated(filter, { page, limit });
 
-        // 5. Respuesta estandarizada
+        // Respuesta estandarizada
         return sendSuccess(res, 200, {
           users: items,
           pagination: {
