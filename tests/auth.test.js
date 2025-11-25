@@ -9,6 +9,7 @@ let server;
 
 beforeAll(async () => {
   await mongoDBUser.deleteByEmail("test@login.com");
+  await mongoDBUser.deleteByEmail("anthony@mail.com");
 
   await mongoDBUser.createUser({
     name: "Test",
@@ -31,6 +32,100 @@ afterAll(async () => {
   if (mongoDBProject && mongoDBProject.client) {
     await mongoDBProject.disconnect();
   }
+});
+
+describe("User: Store" , () => {
+
+  test("Debe devolver 200 si se ha insertado un usuario en la BBDD" , async () => {
+    const res = await request(server)
+    .post("/users")
+    .send({
+    name: "Andrés",
+    surname: "Santos",
+    email: "anthony@mail.com",
+    password: "123456",
+    role: "Guest"
+  })
+  .expect(201);
+
+  expect(res.body.ok).toBe(true);
+  expect(res.body.data).toBeDefined();
+  expect(res.body.error).toBeNull();
+
+  })
+
+  test("Debe devolver 400 si falta un campo obligatorio" , async () => {
+    const res = await request(server)
+    .post("/users")
+    .send({
+    //name: "Andrés",
+    surname: "Santos",
+    email: "anthony@mail.com",
+    password: "123456",
+    role: "Guest"
+  })
+  .expect(400);
+
+  expect(res.body.ok).toBe(false);
+  expect(res.body.data).toBeNull();
+  expect(res.body.error).toBe("name, surname, email y password son obligatorios");
+  })
+
+  test("Debe devolver 409 si el email ya está registrado" , async () => {
+    const res = await request(server)
+    .post("/users")
+    .send({
+    name: "Andrés",
+    surname: "Santos",
+    email: "anthony@mail.com",
+    password: "123456",
+    role: "Guest"
+  })
+  .expect(409);
+
+  expect(res.body.ok).toBe(false);
+  expect(res.body.data).toBeNull();
+  expect(res.body.error).toBe("El email ya está registrado");
+  })
+
+
+});
+
+describe("User: show/:email", () => {
+
+  test("Debe devolver 400 si falta el parámetro email", async () => {
+
+    const res = await request(server)
+    .get("/users/")
+    .expect(400);
+
+    expect(res.body.ok).toBe(false);
+    expect(res.body.data).toBeNull();
+    expect(res.body.error).toBe("Falta parámetro email");
+  })
+
+  test("Debe devolver 404 si el email no está en la BBDD", async () => {
+
+    const res = await request(server)
+    .get("/users/test1111@login.com")
+    .expect(404);
+
+    expect(res.body.ok).toBe(false);
+    expect(res.body.data).toBeNull();
+    expect(res.body.error).toBe("Usuario no encontrado");
+  })
+
+  test("Debe devolver 200 si encuentra el usuario mediante email", async () => {
+
+    const res = await request(server)
+    .get("/users/test@login.com")
+    .expect(200);
+
+    expect(res.body.ok).toBe(true);
+    expect(res.body.data).toBeDefined();
+    expect(res.body.error).toBeNull();
+  })
+
 });
 
 describe("Auth: Login", () => {
