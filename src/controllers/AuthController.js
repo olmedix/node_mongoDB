@@ -55,7 +55,7 @@ export function authController(mongoInstance) {
       });
 
       if (frase !== "") {
-        jwtBlacklist.revokeToken(frase.split(" ")[1].trim());
+       jwtBlacklist.revokeToken(frase.split(" ")[1].trim());
       }
 
       return sendSuccess(res, 200,"Logout exitoso");

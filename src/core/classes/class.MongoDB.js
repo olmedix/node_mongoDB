@@ -103,6 +103,11 @@ export class MongoDB {
     return this.collection.findOne({ email });
   }
 
+  // READ ONE BY TOKEN
+  async findByToken(token) {
+    return this.collection.findOne({ token });
+  }
+
   // READ ONE BY OWNERID
   async findByOwnerId(ownerId) {
     return this.collection.find({ ownerId: ownerId }).toArray();

@@ -54,13 +54,13 @@ export function createRateLimit({maxRequests,windowTime,route}) {
 }
 
 export const rateLimitLogin = createRateLimit({
-  maxRequests: 3,
+  maxRequests: 50,
   windowTime : 10*60*1000,
   route: "login" 
 })
 
 export const rateLimitSignup = createRateLimit({
-  maxRequests: 3,
+  maxRequests: 50,
   windowTime : 10*60*1000,
   route: "signup" 
 })
