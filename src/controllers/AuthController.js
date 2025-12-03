@@ -37,6 +37,7 @@ export function authController(mongoInstance) {
             id: user._id.toString(),
             email: user.email,
             name: user.name,
+            surname: user.surname,
             role: user.role,
           },
         });
